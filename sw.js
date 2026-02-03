@@ -1,8 +1,9 @@
 const CACHE_NAME = 'treino-tracker-v1';
+// IMPORTANTE: Use caminhos relativos (./) em vez de absolutos (/) para GitHub Pages
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
+  './',
+  './index.html',
+  './manifest.json',
   'https://cdn.tailwindcss.com',
   'https://unpkg.com/react@18/umd/react.production.min.js',
   'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
@@ -46,7 +47,10 @@ self.addEventListener('fetch', (event) => {
           
           caches.open(CACHE_NAME)
             .then((cache) => {
-              cache.put(event.request, responseToCache);
+              // Apenas cacheia requisições http/https (evita erro com chrome-extension://)
+              if (event.request.url.startsWith('http')) {
+                cache.put(event.request, responseToCache);
+              }
             });
           
           return response;
