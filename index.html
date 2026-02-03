@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="description" content="App de acompanhamento de treinos com registro de cargas e progresso">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>Treino Tracker Pro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Outfit', sans-serif; 
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    .title-font { font-family: 'Bebas Neue', cursive; letter-spacing: 2px; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
+      50% { box-shadow: 0 0 30px rgba(16, 185, 129, 0.8); }
+    }
+    
+    .animate-slide-up { animation: slideUp 0.4s ease-out; }
+    .pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+    
+    .gradient-text {
+      background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] { 
+      appearance: textfield;
+      -webkit-appearance: none;
+      -moz-appearance: textfield;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // Ícones SVG
+    const Icon = ({ name, size = 20, className = "", ...props }) => {
+      const icons = {
+        clock: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>,
+        check: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><path d="M20 6L9 17l-5-5"/></svg>,
+        checkCircle: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
+        calendar: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+        dumbbell: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><path d="M6.5 6.5L17.5 17.5M17.5 6.5L6.5 17.5M3 8V16M21 8V16M6 6V18M18 6V18"/></svg>,
+        flame: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>,
+        info: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>,
+        play: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><polygon points="5 3 19 12 5 21 5 3"/></svg>,
+        playCircle: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>,
+        history: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>,
+        save: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>,
+        trash: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>,
+        arrowLeft: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>,
+        timer: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><line x1="10" y1="2" x2="14" y2="2"/><line x1="12" y1="14" x2="15" y2="11"/><circle cx="12" cy="14" r="8"/></svg>,
+        trendingUp: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>,
+        user: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>,
+        droplet: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>,
+        activity: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
+        weight: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><circle cx="12" cy="12" r="3"/><path d="M3 12h3m12 0h3M12 3v3m0 12v3M7.5 7.5l2 2m5 5l2 2m0-10l-2 2m-5 5l-2 2"/></svg>,
+        barChart: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>,
+        download: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
+        upload: <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} {...props}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>,
+      };
+      return icons[name] || null;
+    };
+
+    // Dados do treino
+    const workoutData = {
+      segunda: {
+        title: "Segunda: Empurrar",
+        focus: "Largura de tronco (Peito/Ombro/Tríceps)",
+        exercises: [
+          { name: "Supino Inclinado (Halteres ou Barra)", sets: 4, reps: "10-12", obs: "" },
+          { name: "Crucifixo Máquina (Peck Deck)", sets: 3, reps: "12-15", obs: "Bi-set com Flexão" },
+          { name: "Flexão de Braço", sets: 3, reps: "Falha", obs: "Bi-set com Crucifixo" },
+          { name: "Desenvolvimento Militar", sets: 4, reps: "10-12", obs: "Sentado ou em pé" },
+          { name: "Elevação Lateral", sets: 4, reps: "15", obs: "Foco total na lateral" },
+          { name: "Tríceps Corda", sets: 3, reps: "12-15", obs: "Bi-set com Francês" },
+          { name: "Tríceps Francês", sets: 3, reps: "12-15", obs: "Bi-set com Corda" },
+          { name: "Abdominal Infra", sets: 4, reps: "15-20", obs: "Elevação de pernas" }
+        ]
+      },
+      terca: {
+        title: "Terça: Puxar",
+        focus: "Postura e formato em V (Costas/Bíceps)",
+        exercises: [
+          { name: "Puxada Alta", sets: 4, reps: "10-12", obs: "Pegada aberta" },
+          { name: "Remada Baixa (Triângulo)", sets: 4, reps: "12", obs: "Segure 1s na contração" },
+          { name: "Face Pull", sets: 3, reps: "15", obs: "Essencial para postura" },
+          { name: "Crucifixo Inverso", sets: 3, reps: "12-15", obs: "Halteres ou Máquina" },
+          { name: "Rosca Direta", sets: 4, reps: "10-12", obs: "Barra W ou Reta" },
+          { name: "Rosca Martelo", sets: 3, reps: "12-15", obs: "Preencher braço" }
+        ]
+      },
+      quarta: {
+        title: "Quarta: Pernas (Anterior)",
+        focus: "Quadríceps - Alta demanda",
+        exercises: [
+          { name: "Agachamento Livre ou Hack", sets: 4, reps: "10-12", obs: "" },
+          { name: "Leg Press 45º", sets: 4, reps: "12-15", obs: "Pés baixos na plataforma" },
+          { name: "Cadeira Extensora", sets: 3, reps: "15", obs: "Drop-set na última série" },
+          { name: "Afundo ou Passada", sets: 3, reps: "12 cada", obs: "Com halteres" },
+          { name: "Panturrilha no Leg/Sentado", sets: 5, reps: "15-20", obs: "" }
+        ]
+      },
+      quinta: {
+        title: "Quinta: Upper Body",
+        focus: "Metabólico / Pump",
+        exercises: [
+          { name: "Supino Reto", sets: 4, reps: "10-12", obs: "Bi-set com Remada" },
+          { name: "Remada Curvada", sets: 4, reps: "10-12", obs: "Bi-set com Supino" },
+          { name: "Desenvolvimento Halteres", sets: 3, reps: "12", obs: "Bi-set com Puxada" },
+          { name: "Puxada Alta Supinada", sets: 3, reps: "12", obs: "Bi-set com Desenv." },
+          { name: "Elevação Lateral", sets: 3, reps: "12-15", obs: "Bi-set com Frontal" },
+          { name: "Elevação Frontal", sets: 3, reps: "12-15", obs: "Bi-set com Lateral" },
+          { name: "Rosca Scott", sets: 3, reps: "12", obs: "Super-série braços" },
+          { name: "Tríceps Testa", sets: 3, reps: "12", obs: "Super-série braços" },
+          { name: "Prancha Abdominal", sets: 4, reps: "1 min", obs: "Ou até a falha" }
+        ]
+      },
+      sexta: {
+        title: "Sexta: Pernas (Posterior)",
+        focus: "Posterior e Glúteo",
+        exercises: [
+          { name: "Levantamento Terra/Stiff", sets: 4, reps: "8-10", obs: "Carga moderada, técnica" },
+          { name: "Mesa Flexora", sets: 4, reps: "12-15", obs: "" },
+          { name: "Cadeira Flexora/Nórdica", sets: 3, reps: "Falha", obs: "" },
+          { name: "Elevação Pélvica", sets: 4, reps: "12", obs: "Contração de glúteo no topo" },
+          { name: "Panturrilha em Pé", sets: 4, reps: "15", obs: "" }
+        ]
+      }
+    };
+
+    const profile = {
+      nome: "Treino Slim/Definição",
+      horario: "12:00 - 13:20",
+      meta: "Massa Magra + Perda de Gordura",
+      cardio: "Sáb/Dom: Pedalada (40-60min)"
+    };
+
+    function App() {
+      const [activeTab, setActiveTab] = useState('segunda');
+      const [view, setView] = useState('workout');
+      const [timeLeft, setTimeLeft] = useState(60);
+      const [isTimerRunning, setIsTimerRunning] = useState(false);
+      const [completedSets, setCompletedSets] = useState({});
+      const [weights, setWeights] = useState({});
+      const [history, setHistory] = useState([]);
+      const [sessionStartTime, setSessionStartTime] = useState(null);
+      const [elapsedString, setElapsedString] = useState("00:00");
+      const [userStats, setUserStats] = useState({ weight: '', height: '' });
+      const fileInputRef = useRef(null);
+
+      const chartRef = useRef(null);
+      const chartInstance = useRef(null);
+
+      // Carregar dados salvos
+      useEffect(() => {
+        const savedProgress = localStorage.getItem('slim_workout_progress');
+        const savedWeights = localStorage.getItem('slim_workout_weights');
+        const savedHistory = localStorage.getItem('slim_workout_history');
+        const savedStartTime = localStorage.getItem('slim_workout_start_time');
+        const savedStats = localStorage.getItem('slim_user_stats');
+
+        if (savedProgress) setCompletedSets(JSON.parse(savedProgress));
+        if (savedWeights) setWeights(JSON.parse(savedWeights));
+        if (savedHistory) setHistory(JSON.parse(savedHistory));
+        if (savedStats) setUserStats(JSON.parse(savedStats));
+        
+        const now = Date.now();
+        if (savedStartTime && (now - parseInt(savedStartTime) < 12 * 60 * 60 * 1000)) {
+          setSessionStartTime(parseInt(savedStartTime));
+        }
+      }, []);
+
+      // Atualizar cronômetro
+      useEffect(() => {
+        if (!sessionStartTime) {
+          setElapsedString("00:00");
+          return;
+        }
+
+        const interval = setInterval(() => {
+          const now = Date.now();
+          const diff = now - sessionStartTime;
+          
+          const seconds = Math.floor((diff / 1000) % 60);
+          const minutes = Math.floor((diff / (1000 * 60)) % 60);
+          const hours = Math.floor(diff / (1000 * 60 * 60));
+
+          const fmt = (num) => num.toString().padStart(2, '0');
+          
+          if (hours > 0) {
+            setElapsedString(`${hours}:${fmt(minutes)}:${fmt(seconds)}`);
+          } else {
+            setElapsedString(`${fmt(minutes)}:${fmt(seconds)}`);
+          }
+        }, 1000);
+
+        return () => clearInterval(interval);
+      }, [sessionStartTime]);
+
+      // Salvar dados
+      useEffect(() => {
+        if (Object.keys(completedSets).length > 0) {
+          localStorage.setItem('slim_workout_progress', JSON.stringify(completedSets));
+        }
+      }, [completedSets]);
+
+      useEffect(() => {
+        localStorage.setItem('slim_workout_weights', JSON.stringify(weights));
+      }, [weights]);
+
+      useEffect(() => {
+        localStorage.setItem('slim_workout_history', JSON.stringify(history));
+      }, [history]);
+
+      useEffect(() => {
+        localStorage.setItem('slim_user_stats', JSON.stringify(userStats));
+      }, [userStats]);
+
+      // Timer de descanso
+      useEffect(() => {
+        let interval = null;
+        if (isTimerRunning && timeLeft > 0) {
+          interval = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+        } else if (timeLeft === 0) {
+          setIsTimerRunning(false);
+          // Vibração quando acabar o timer
+          if ('vibrate' in navigator) {
+            navigator.vibrate([200, 100, 200]);
+          }
+          // Notificação
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Descanso Finalizado!', {
+              body: 'Hora de voltar ao treino 💪',
+              icon: 'icon-192.png',
+              badge: 'icon-192.png'
+            });
+          }
+        }
+        return () => clearInterval(interval);
+      }, [isTimerRunning, timeLeft]);
+
+      // Gráfico de progresso
+      useEffect(() => {
+        if (view === 'stats' && chartRef.current) {
+          const ctx = chartRef.current.getContext('2d');
+          
+          if (chartInstance.current) {
+            chartInstance.current.destroy();
+          }
+
+          const last7Days = history.slice(-7);
+          const labels = last7Days.map(h => new Date(h.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }));
+          const durations = last7Days.map(h => Math.round(h.duration / 60));
+          const exercises = last7Days.map(h => h.exercises);
+
+          chartInstance.current = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels,
+              datasets: [
+                {
+                  label: 'Duração (min)',
+                  data: durations,
+                  borderColor: 'rgb(16, 185, 129)',
+                  backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                  tension: 0.4,
+                  fill: true,
+                  yAxisID: 'y'
+                },
+                {
+                  label: 'Exercícios',
+                  data: exercises,
+                  borderColor: 'rgb(6, 182, 212)',
+                  backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                  tension: 0.4,
+                  fill: true,
+                  yAxisID: 'y1'
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              interaction: {
+                mode: 'index',
+                intersect: false,
+              },
+              plugins: {
+                legend: {
+                  labels: {
+                    color: 'white',
+                    font: { family: 'Outfit' }
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  ticks: { color: 'rgba(255,255,255,0.7)' },
+                  grid: { color: 'rgba(255,255,255,0.1)' }
+                },
+                y: {
+                  type: 'linear',
+                  display: true,
+                  position: 'left',
+                  ticks: { color: 'rgb(16, 185, 129)' },
+                  grid: { color: 'rgba(255,255,255,0.1)' }
+                },
+                y1: {
+                  type: 'linear',
+                  display: true,
+                  position: 'right',
+                  ticks: { color: 'rgb(6, 182, 212)' },
+                  grid: { display: false }
+                }
+              }
+            }
+          });
+        }
+
+        return () => {
+          if (chartInstance.current) {
+            chartInstance.current.destroy();
+          }
+        };
+      }, [view, history]);
+
+      const toggleTimer = () => {
+        if (isTimerRunning) setIsTimerRunning(false);
+        else {
+          setTimeLeft(60);
+          setIsTimerRunning(true);
+        }
+      };
+
+      const resetTimer = () => {
+        setIsTimerRunning(false);
+        setTimeLeft(60);
+      };
+
+      const toggleSet = (day, exerciseIndex, setNumber) => {
+        const key = `${day}-${exerciseIndex}-${setNumber}`;
+        setCompletedSets(prev => ({ ...prev, [key]: !prev[key] }));
+      };
+
+      const updateWeight = (day, exerciseIndex, value) => {
+        const key = `${day}-${exerciseIndex}`;
+        setWeights(prev => ({ ...prev, [key]: value }));
+      };
+
+      const startWorkout = () => {
+        const newStart = Date.now();
+        setSessionStartTime(newStart);
+        localStorage.setItem('slim_workout_start_time', newStart.toString());
+        
+        // Pedir permissão de notificação
+        if ('Notification' in window && Notification.permission === 'default') {
+          Notification.requestPermission();
+        }
+      };
+
+      const finishWorkout = () => {
+        if (!sessionStartTime) {
+          alert("Você precisa iniciar o cronômetro antes de finalizar o treino!");
+          return;
+        }
+
+        const duration = Date.now() - sessionStartTime;
+        const completedExercises = Object.keys(completedSets).filter(k => 
+          k.startsWith(activeTab) && completedSets[k]
+        ).length;
+
+        const newEntry = {
+          date: Date.now(),
+          day: activeTab,
+          duration,
+          exercises: completedExercises,
+          weights: { ...weights }
+        };
+
+        setHistory(prev => [...prev, newEntry]);
+        setCompletedSets({});
+        setSessionStartTime(null);
+        localStorage.removeItem('slim_workout_start_time');
+        
+        if ('vibrate' in navigator) {
+          navigator.vibrate([300, 100, 300, 100, 300]);
+        }
+
+        alert(`🎉 Treino finalizado!\nDuração: ${Math.round(duration / 60000)} minutos\nExercícios: ${completedExercises}`);
+      };
+
+      const resetWeek = () => {
+        if (confirm('Resetar todo o progresso da semana?')) {
+          setCompletedSets({});
+          setSessionStartTime(null);
+          localStorage.removeItem('slim_workout_start_time');
+          localStorage.removeItem('slim_workout_progress');
+        }
+      };
+
+      const deleteHistory = (index) => {
+        if (confirm('Deletar este treino do histórico?')) {
+          setHistory(prev => prev.filter((_, i) => i !== index));
+        }
+      };
+
+      const calculateIMC = () => {
+        const w = parseFloat(userStats.weight);
+        const h = parseFloat(userStats.height) / 100;
+        if (w && h) {
+          return (w / (h * h)).toFixed(1);
+        }
+        return null;
+      };
+
+      const calculateWater = () => {
+        const w = parseFloat(userStats.weight);
+        if (w) {
+          return (w * 35).toFixed(0);
+        }
+        return null;
+      };
+
+      // Funções de Backup e Restauração
+      const exportData = () => {
+        const data = {
+          progress: localStorage.getItem('slim_workout_progress'),
+          weights: localStorage.getItem('slim_workout_weights'),
+          history: localStorage.getItem('slim_workout_history'),
+          stats: localStorage.getItem('slim_user_stats')
+        };
+        const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `backup-treino-${new Date().toISOString().split('T')[0]}.json`;
+        a.click();
+      };
+
+      const importData = (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        if (!confirm('Isso irá substituir seus dados atuais pelos dados do arquivo. Deseja continuar?')) {
+          event.target.value = ''; // Reset input
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const data = JSON.parse(e.target.result);
+            if (data.progress) localStorage.setItem('slim_workout_progress', data.progress);
+            if (data.weights) localStorage.setItem('slim_workout_weights', data.weights);
+            if (data.history) localStorage.setItem('slim_workout_history', data.history);
+            if (data.stats) localStorage.setItem('slim_user_stats', data.stats);
+            
+            alert('Dados importados com sucesso! A página será recarregada.');
+            window.location.reload();
+          } catch (err) {
+            alert('Erro ao ler arquivo de backup. Verifique se é o arquivo correto.');
+          }
+        };
+        reader.readAsText(file);
+      };
+
+      const getIMCCategory = (imc) => {
+        if (!imc) return null;
+        if (imc < 18.5) return { text: 'Abaixo do peso', color: 'text-cyan-400' };
+        if (imc < 25) return { text: 'Peso normal', color: 'text-emerald-400' };
+        if (imc < 30) return { text: 'Sobrepeso', color: 'text-yellow-400' };
+        return { text: 'Obesidade', color: 'text-red-400' };
+      };
+
+      const currentWorkout = workoutData[activeTab];
+      const imc = calculateIMC();
+      const water = calculateWater();
+      const imcCategory = getIMCCategory(imc);
+
+      // View: Histórico
+      if (view === 'history') {
+        return (
+          <div className="min-h-screen pb-24">
+            <div className="bg-slate-900 text-white p-6 rounded-b-3xl shadow-lg mb-6 sticky top-0 z-20">
+              <button 
+                onClick={() => setView('workout')}
+                className="flex items-center gap-2 text-emerald-400 mb-4 hover:text-emerald-300 transition"
+              >
+                <Icon name="arrowLeft" size={20} />
+                <span className="font-semibold">Voltar</span>
+              </button>
+              <h1 className="text-2xl font-bold title-font gradient-text">HISTÓRICO DE TREINOS</h1>
+            </div>
+
+            <div className="px-4 max-w-2xl mx-auto space-y-3">
+              {history.length === 0 ? (
+                <div className="glass text-white p-8 rounded-xl text-center">
+                  <Icon name="history" size={48} className="mx-auto mb-4 opacity-50" />
+                  <p className="text-slate-400">Nenhum treino registrado ainda</p>
+                </div>
+              ) : (
+                history.slice().reverse().map((entry, idx) => {
+                  const realIndex = history.length - 1 - idx;
+                  return (
+                    <div key={realIndex} className="glass text-white p-4 rounded-xl animate-slide-up">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <h3 className="font-bold text-emerald-400 capitalize">
+                            {workoutData[entry.day]?.title.split(':')[0]}
+                          </h3>
+                          <p className="text-xs text-slate-400">
+                            {new Date(entry.date).toLocaleDateString('pt-BR')} às {new Date(entry.date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => deleteHistory(realIndex)}
+                          className="text-red-400 hover:text-red-300 transition"
+                        >
+                          <Icon name="trash" size={18} />
+                        </button>
+                      </div>
+                      <div className="flex gap-4 text-sm">
+                        <div className="flex items-center gap-1">
+                          <Icon name="clock" size={14} className="text-cyan-400" />
+                          <span>{Math.round(entry.duration / 60000)} min</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Icon name="dumbbell" size={14} className="text-emerald-400" />
+                          <span>{entry.exercises} exercícios</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      // View: Estatísticas e Gráficos
+      if (view === 'stats') {
+        return (
+          <div className="min-h-screen pb-24">
+            <div className="bg-slate-900 text-white p-6 rounded-b-3xl shadow-lg mb-6 sticky top-0 z-20">
+              <button 
+                onClick={() => setView('workout')}
+                className="flex items-center gap-2 text-emerald-400 mb-4 hover:text-emerald-300 transition"
+              >
+                <Icon name="arrowLeft" size={20} />
+                <span className="font-semibold">Voltar</span>
+              </button>
+              <h1 className="text-2xl font-bold title-font gradient-text">PROGRESSO & ESTATÍSTICAS</h1>
+            </div>
+
+            <div className="px-4 max-w-2xl mx-auto space-y-4">
+              {/* Cards de estatísticas rápidas */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="glass text-white p-4 rounded-xl">
+                  <Icon name="flame" size={24} className="text-orange-400 mb-2" />
+                  <div className="text-2xl font-bold">{history.length}</div>
+                  <div className="text-xs text-slate-400">Treinos Total</div>
+                </div>
+                <div className="glass text-white p-4 rounded-xl">
+                  <Icon name="trendingUp" size={24} className="text-emerald-400 mb-2" />
+                  <div className="text-2xl font-bold">
+                    {history.length > 0 ? Math.round(history.reduce((acc, h) => acc + h.duration, 0) / history.length / 60000) : 0}
+                  </div>
+                  <div className="text-xs text-slate-400">Média (min)</div>
+                </div>
+              </div>
+
+              {/* Gráfico de progresso */}
+              {history.length > 0 && (
+                <div className="glass text-white p-4 rounded-xl">
+                  <h3 className="font-bold mb-4 flex items-center gap-2">
+                    <Icon name="barChart" size={20} className="text-cyan-400" />
+                    Últimos 7 Treinos
+                  </h3>
+                  <div style={{ height: '250px' }}>
+                    <canvas ref={chartRef}></canvas>
+                  </div>
+                </div>
+              )}
+
+              {/* Resumo de cargas */}
+              <div className="glass text-white p-4 rounded-xl">
+                <h3 className="font-bold mb-3 flex items-center gap-2">
+                  <Icon name="weight" size={20} className="text-purple-400" />
+                  Cargas Registradas
+                </h3>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {Object.keys(weights).length === 0 ? (
+                    <p className="text-sm text-slate-400 text-center py-4">
+                      Nenhuma carga registrada ainda
+                    </p>
+                  ) : (
+                    Object.entries(weights)
+                      .filter(([_, value]) => value)
+                      .map(([key, value]) => {
+                        const [day, exerciseIndex] = key.split('-');
+                        const exercise = workoutData[day]?.exercises[parseInt(exerciseIndex)];
+                        return (
+                          <div key={key} className="flex justify-between items-center text-sm bg-slate-800/50 p-2 rounded">
+                            <span className="text-slate-300">{exercise?.name}</span>
+                            <span className="font-bold text-emerald-400">{value} kg</span>
+                          </div>
+                        );
+                      })
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // View: Perfil (IMC e Água)
+      if (view === 'profile') {
+        return (
+          <div className="min-h-screen pb-24">
+            <div className="bg-slate-900 text-white p-6 rounded-b-3xl shadow-lg mb-6 sticky top-0 z-20">
+              <button 
+                onClick={() => setView('workout')}
+                className="flex items-center gap-2 text-emerald-400 mb-4 hover:text-emerald-300 transition"
+              >
+                <Icon name="arrowLeft" size={20} />
+                <span className="font-semibold">Voltar</span>
+              </button>
+              <h1 className="text-2xl font-bold title-font gradient-text">PERFIL & SAÚDE</h1>
+            </div>
+
+            <div className="px-4 max-w-2xl mx-auto space-y-4">
+              {/* Informações do Perfil */}
+              <div className="glass text-white p-5 rounded-xl">
+                <h3 className="font-bold mb-3 flex items-center gap-2">
+                  <Icon name="user" size={20} className="text-cyan-400" />
+                  Informações Pessoais
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs text-slate-400 block mb-1">Peso (kg)</label>
+                    <input 
+                      type="number"
+                      value={userStats.weight}
+                      onChange={(e) => setUserStats(prev => ({ ...prev, weight: e.target.value }))}
+                      placeholder="70"
+                      className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:border-emerald-500 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-slate-400 block mb-1">Altura (cm)</label>
+                    <input 
+                      type="number"
+                      value={userStats.height}
+                      onChange={(e) => setUserStats(prev => ({ ...prev, height: e.target.value }))}
+                      placeholder="175"
+                      className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:border-emerald-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Backup e Restauração */}
+              <div className="glass text-white p-5 rounded-xl border border-emerald-500/30">
+                <h3 className="font-bold mb-3 flex items-center gap-2">
+                  <Icon name="save" size={20} className="text-emerald-400" />
+                  Backup e Restauração
+                </h3>
+                <p className="text-xs text-slate-400 mb-4">
+                   Salve seus dados para não perdê-los ao limpar o cache ou trocar de celular.
+                </p>
+                <div className="flex gap-3">
+                   <button 
+                     onClick={exportData}
+                     className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition"
+                   >
+                     <Icon name="download" size={16} />
+                     Salvar Dados
+                   </button>
+                   <button 
+                     onClick={() => fileInputRef.current.click()}
+                     className="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition"
+                   >
+                     <Icon name="upload" size={16} />
+                     Carregar Dados
+                   </button>
+                   <input 
+                     type="file" 
+                     ref={fileInputRef}
+                     onChange={importData}
+                     accept=".json"
+                     className="hidden"
+                   />
+                </div>
+              </div>
+
+              {/* Calculadora de IMC */}
+              <div className="glass text-white p-5 rounded-xl">
+                <h3 className="font-bold mb-3 flex items-center gap-2">
+                  <Icon name="activity" size={20} className="text-purple-400" />
+                  Índice de Massa Corporal
+                </h3>
+                {imc ? (
+                  <div className="text-center">
+                    <div className="text-5xl font-bold gradient-text mb-2">{imc}</div>
+                    <div className={`text-lg font-semibold ${imcCategory?.color}`}>
+                      {imcCategory?.text}
+                    </div>
+                    <div className="mt-4 space-y-1 text-xs text-slate-400">
+                      <div className="flex justify-between">
+                        <span>Abaixo do peso:</span>
+                        <span>&lt; 18.5</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Peso normal:</span>
+                        <span>18.5 - 24.9</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Sobrepeso:</span>
+                        <span>25 - 29.9</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Obesidade:</span>
+                        <span>≥ 30</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-center text-slate-400 py-4">
+                    Preencha seu peso e altura acima
+                  </p>
+                )}
+              </div>
+
+              {/* Calculadora de Água */}
+              <div className="glass text-white p-5 rounded-xl">
+                <h3 className="font-bold mb-3 flex items-center gap-2">
+                  <Icon name="droplet" size={20} className="text-blue-400" />
+                  Ingestão Diária de Água
+                </h3>
+                {water ? (
+                  <div className="text-center">
+                    <div className="text-5xl font-bold text-blue-400 mb-2">{water}ml</div>
+                    <div className="text-sm text-slate-400">Recomendação diária</div>
+                    <div className="mt-4 p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
+                      <p className="text-xs text-blue-300">
+                        💧 Aproximadamente {Math.ceil(water / 250)} copos de 250ml por dia
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-center text-slate-400 py-4">
+                    Preencha seu peso acima
+                  </p>
+                )}
+              </div>
+
+              {/* Informações do Treino */}
+              <div className="glass text-white p-5 rounded-xl">
+                <h3 className="font-bold mb-3 flex items-center gap-2">
+                  <Icon name="dumbbell" size={20} className="text-emerald-400" />
+                  Seu Programa
+                </h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Programa:</span>
+                    <span className="font-semibold">{profile.nome}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Horário:</span>
+                    <span className="font-semibold">{profile.horario}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Meta:</span>
+                    <span className="font-semibold">{profile.meta}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Cardio:</span>
+                    <span className="font-semibold">{profile.cardio}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // View: Workout (Principal)
+      return (
+        <div className="min-h-screen pb-32">
+          {/* Header */}
+          <div className="bg-slate-900 text-white p-6 rounded-b-3xl shadow-lg mb-6 sticky top-0 z-20">
+            <div className="flex justify-between items-start mb-4">
+              <div>
+                <h1 className="text-2xl font-bold title-font gradient-text">{profile.nome}</h1>
+                <p className="text-slate-400 text-xs flex items-center gap-1 mt-1">
+                  <Icon name="clock" size={12} /> {profile.horario}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setView('stats')}
+                  className="glass hover:bg-white/10 text-slate-200 p-2 rounded-lg transition"
+                  title="Estatísticas"
+                >
+                  <Icon name="barChart" size={18} />
+                </button>
+                <button 
+                  onClick={() => setView('history')}
+                  className="glass hover:bg-white/10 text-slate-200 p-2 rounded-lg transition"
+                  title="Histórico"
+                >
+                  <Icon name="history" size={18} />
+                </button>
+                <button 
+                  onClick={() => setView('profile')}
+                  className="glass hover:bg-white/10 text-slate-200 p-2 rounded-lg transition"
+                  title="Perfil"
+                >
+                  <Icon name="user" size={18} />
+                </button>
+              </div>
+            </div>
+            
+            <div className="flex gap-2 items-center overflow-x-auto no-scrollbar">
+              {!sessionStartTime ? (
+                <button 
+                  onClick={startWorkout}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-full font-bold flex gap-2 items-center text-sm shadow-lg pulse-glow"
+                >
+                  <Icon name="play" size={16} />
+                  INICIAR TREINO
+                </button>
+              ) : (
+                <div className="glass px-4 py-2 rounded-full whitespace-nowrap text-emerald-400 font-bold flex gap-2 items-center text-sm">
+                  <Icon name="timer" size={16} className="animate-pulse" />
+                  <span>{elapsedString}</span>
+                </div>
+              )}
+              
+              <div className="flex-1"></div>
+
+              <button 
+                onClick={resetWeek} 
+                className="glass px-3 py-1.5 rounded-full whitespace-nowrap hover:bg-red-900/30 text-slate-300 hover:text-red-300 transition text-sm"
+              >
+                Resetar
+              </button>
+            </div>
+          </div>
+
+          {/* Day Selector */}
+          <div className="px-4 mb-6 overflow-x-auto no-scrollbar">
+            <div className="flex gap-2 min-w-max">
+              {Object.keys(workoutData).map((day) => (
+                <button
+                  key={day}
+                  onClick={() => setActiveTab(day)}
+                  className={`px-4 py-2 rounded-full text-sm font-semibold transition-all ${
+                    activeTab === day
+                      ? 'bg-emerald-500 text-white shadow-lg transform scale-105'
+                      : 'glass text-slate-300 hover:bg-white/10'
+                  }`}
+                >
+                  {day.charAt(0).toUpperCase() + day.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <div className="px-4 max-w-2xl mx-auto space-y-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Icon name="dumbbell" className="text-emerald-400" size={24} />
+              <h2 className="font-bold text-xl text-white title-font">{currentWorkout.title}</h2>
+            </div>
+            <p className="text-sm text-slate-300 italic mb-4 glass p-3 rounded-lg border-l-4 border-emerald-500">
+              🎯 {currentWorkout.focus}
+            </p>
+
+            {currentWorkout.exercises.map((exercise, idx) => {
+              const weightKey = `${activeTab}-${idx}`;
+              return (
+                <div key={idx} className="glass p-4 rounded-xl relative overflow-hidden animate-slide-up">
+                  {exercise.obs.includes("Bi-set") && (
+                    <div className="absolute top-0 right-0 bg-orange-500/20 text-orange-400 text-[10px] font-bold px-2 py-1 rounded-bl-lg border-l border-b border-orange-500/30">
+                      BI-SET
+                    </div>
+                  )}
+                  
+                  <div className="flex justify-between items-start mb-3">
+                    <h3 className="font-bold text-white pr-8">{exercise.name}</h3>
+                  </div>
+
+                  <div className="flex items-center gap-3 text-sm text-slate-300 mb-3">
+                    <div className="bg-slate-800 px-2 py-1 rounded border border-slate-700">
+                      <span className="font-bold text-emerald-400">{exercise.sets}</span> Séries
+                    </div>
+                    <div className="bg-slate-800 px-2 py-1 rounded border border-slate-700">
+                      <span className="font-bold text-cyan-400">{exercise.reps}</span> Reps
+                    </div>
+                    <div className="flex-1 flex items-center gap-2">
+                      <Icon name="weight" size={14} className="text-purple-400" />
+                      <input 
+                        type="number"
+                        value={weights[weightKey] || ''}
+                        onChange={(e) => updateWeight(activeTab, idx, e.target.value)}
+                        placeholder="kg"
+                        className="w-16 bg-slate-800 border border-slate-700 rounded px-2 py-1 text-white text-xs focus:border-purple-500 focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {exercise.obs && !exercise.obs.includes("Bi-set") && (
+                    <div className="flex items-start gap-1 text-xs text-slate-400 mb-3 bg-slate-800/50 p-2 rounded border border-slate-700/50">
+                      <Icon name="info" size={12} className="mt-0.5 flex-shrink-0" />
+                      {exercise.obs}
+                    </div>
+                  )}
+                  {exercise.obs && exercise.obs.includes("Bi-set") && (
+                    <div className="flex items-start gap-1 text-xs text-orange-300 mb-3 bg-orange-500/10 p-2 rounded border border-orange-500/20">
+                      <Icon name="flame" size={12} className="mt-0.5 flex-shrink-0" />
+                      {exercise.obs}
+                    </div>
+                  )}
+
+                  {/* Set Checkboxes */}
+                  <div className="flex gap-2 mb-3">
+                    {Array.from({ length: exercise.sets }).map((_, setIdx) => {
+                      const isDone = completedSets[`${activeTab}-${idx}-${setIdx}`];
+                      return (
+                        <button
+                          key={setIdx}
+                          onClick={() => toggleSet(activeTab, idx, setIdx)}
+                          className={`h-9 flex-1 rounded-lg flex items-center justify-center transition-all border ${
+                            isDone 
+                              ? 'bg-emerald-500 border-emerald-400 text-white shadow-lg shadow-emerald-500/50' 
+                              : 'glass border-slate-600 text-slate-400 hover:border-emerald-500/50'
+                          }`}
+                        >
+                          {isDone ? <Icon name="checkCircle" size={18} /> : <span className="text-sm font-bold">{setIdx + 1}</span>}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Link YouTube */}
+                  <a 
+                    href={`https://www.youtube.com/results?search_query=${encodeURIComponent(exercise.name + " execução correta")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full py-2 bg-slate-800/50 text-slate-300 rounded-lg text-xs font-semibold hover:bg-red-500/20 hover:text-red-400 hover:border-red-500/30 transition border border-slate-700"
+                  >
+                    <Icon name="playCircle" size={16} />
+                    Ver execução no YouTube
+                  </a>
+                </div>
+              );
+            })}
+            
+            {/* Finish Workout Button */}
+            <button 
+              onClick={finishWorkout}
+              disabled={!sessionStartTime}
+              className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg flex items-center justify-center gap-2 mb-8 transition-all ${
+                sessionStartTime 
+                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white active:scale-95 cursor-pointer'
+                  : 'bg-slate-700 text-slate-500 cursor-not-allowed opacity-50'
+              }`}
+            >
+              <Icon name="save" size={24} />
+              {sessionStartTime ? "Finalizar Treino de Hoje" : "Inicie o treino primeiro"}
+            </button>
+          </div>
+
+          {/* Floating Timer */}
+          <div className="fixed bottom-4 left-4 right-4 bg-slate-900 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between z-50 border border-slate-700">
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-full ${isTimerRunning ? 'bg-emerald-500 animate-pulse' : 'bg-slate-700'}`}>
+                <Icon name="clock" size={20} />
+              </div>
+              <div>
+                <div className="text-xs text-slate-400 uppercase font-bold tracking-wider">Descanso</div>
+                <div className="text-3xl font-mono font-bold leading-none">{timeLeft}s</div>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button 
+                onClick={toggleTimer}
+                className="bg-white text-slate-900 px-5 py-2 rounded-lg font-bold text-sm active:scale-95 transition-transform"
+              >
+                {isTimerRunning ? 'Pausar' : 'Iniciar'}
+              </button>
+              <button 
+                onClick={resetTimer}
+                className="bg-slate-700 text-white px-3 py-2 rounded-lg active:scale-95 transition-transform"
+              >
+                ↻
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+
+    // Service Worker para PWA
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(reg => console.log('Service Worker registrado'))
+          .catch(err => console.log('Service Worker falhou:', err));
+      });
+    }
+  </script>
+</body>
+</html>
