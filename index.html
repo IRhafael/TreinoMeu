@@ -200,71 +200,79 @@
     };
 
     // Dados padrão do treino
-    const defaultWorkoutData = {
-      segunda: {
-        title: "Segunda: Empurrar",
-        focus: "Largura de tronco (Peito/Ombro/Tríceps)",
-        exercises: [
-          { name: "Supino Inclinado (Halteres ou Barra)", sets: 4, reps: "10-12", obs: "" },
-          { name: "Crucifixo Máquina (Peck Deck)", sets: 3, reps: "12-15", obs: "Bi-set com Flexão" },
-          { name: "Flexão de Braço", sets: 3, reps: "Falha", obs: "Bi-set com Crucifixo" },
-          { name: "Desenvolvimento Militar", sets: 4, reps: "10-12", obs: "Sentado ou em pé" },
-          { name: "Elevação Lateral", sets: 4, reps: "15", obs: "Foco total na lateral" },
-          { name: "Tríceps Corda", sets: 3, reps: "12-15", obs: "Bi-set com Francês" },
-          { name: "Tríceps Francês", sets: 3, reps: "12-15", obs: "Bi-set com Corda" },
-          { name: "Abdominal Infra", sets: 4, reps: "15-20", obs: "Elevação de pernas" }
-        ]
-      },
-      terca: {
-        title: "Terça: Puxar",
-        focus: "Postura e formato em V (Costas/Bíceps)",
-        exercises: [
-          { name: "Puxada Alta", sets: 4, reps: "10-12", obs: "Pegada aberta" },
-          { name: "Remada Baixa (Triângulo)", sets: 4, reps: "12", obs: "Segure 1s na contração" },
-          { name: "Face Pull", sets: 3, reps: "15", obs: "Essencial para postura" },
-          { name: "Crucifixo Inverso", sets: 3, reps: "12-15", obs: "Halteres ou Máquina" },
-          { name: "Rosca Direta", sets: 4, reps: "10-12", obs: "Barra W ou Reta" },
-          { name: "Rosca Martelo", sets: 3, reps: "12-15", obs: "Preencher braço" }
-        ]
-      },
-      quarta: {
-        title: "Quarta: Pernas (Anterior)",
-        focus: "Quadríceps - Alta demanda",
-        exercises: [
-          { name: "Agachamento Livre ou Hack", sets: 4, reps: "10-12", obs: "" },
-          { name: "Leg Press 45º", sets: 4, reps: "12-15", obs: "Pés baixos na plataforma" },
-          { name: "Cadeira Extensora", sets: 3, reps: "15", obs: "Drop-set na última série" },
-          { name: "Afundo ou Passada", sets: 3, reps: "12 cada", obs: "Com halteres" },
-          { name: "Panturrilha no Leg/Sentado", sets: 5, reps: "15-20", obs: "" }
-        ]
-      },
-      quinta: {
-        title: "Quinta: Upper Body",
-        focus: "Metabólico / Pump",
-        exercises: [
-          { name: "Supino Reto", sets: 4, reps: "10-12", obs: "Bi-set com Remada" },
-          { name: "Remada Curvada", sets: 4, reps: "10-12", obs: "Bi-set com Supino" },
-          { name: "Desenvolvimento Halteres", sets: 3, reps: "12", obs: "Bi-set com Puxada" },
-          { name: "Puxada Alta Supinada", sets: 3, reps: "12", obs: "Bi-set com Desenv." },
-          { name: "Elevação Lateral", sets: 3, reps: "12-15", obs: "Bi-set com Frontal" },
-          { name: "Elevação Frontal", sets: 3, reps: "12-15", obs: "Bi-set com Lateral" },
-          { name: "Rosca Scott", sets: 3, reps: "12", obs: "Super-série braços" },
-          { name: "Tríceps Testa", sets: 3, reps: "12", obs: "Super-série braços" },
-          { name: "Prancha Abdominal", sets: 4, reps: "1 min", obs: "Ou até a falha" }
-        ]
-      },
-      sexta: {
-        title: "Sexta: Pernas (Posterior)",
-        focus: "Posterior e Glúteo",
-        exercises: [
-          { name: "Levantamento Terra/Stiff", sets: 4, reps: "8-10", obs: "Carga moderada, técnica" },
-          { name: "Mesa Flexora", sets: 4, reps: "12-15", obs: "" },
-          { name: "Cadeira Flexora/Nórdica", sets: 3, reps: "Falha", obs: "" },
-          { name: "Elevação Pélvica", sets: 4, reps: "12", obs: "Contração de glúteo no topo" },
-          { name: "Panturrilha em Pé", sets: 4, reps: "15", obs: "" }
-        ]
-      }
-    };
+   const defaultWorkoutData = {
+  segunda: {
+    title: "Segunda: Empurrar",
+    focus: "Peito / Ombro / Tríceps + Estética",
+    exercises: [
+      { name: "Supino Inclinado", sets: 4, reps: "8-12", obs: "Carga progressiva" },
+      { name: "Crucifixo Máquina", sets: 3, reps: "12-15", obs: "Bi-set com Flexão" },
+      { name: "Flexão de Braço", sets: 3, reps: "Falha", obs: "Bi-set com Crucifixo" },
+      { name: "Desenvolvimento Militar", sets: 4, reps: "8-12", obs: "Controle total" },
+      { name: "Elevação Lateral", sets: 4, reps: "15", obs: "Foco lateral do ombro" },
+      { name: "Face Pull", sets: 3, reps: "15", obs: "Postura e estabilização" },
+      { name: "Tríceps Corda", sets: 3, reps: "12-15", obs: "Bi-set com Francês" },
+      { name: "Tríceps Francês", sets: 3, reps: "12-15", obs: "Bi-set com Corda" },
+      { name: "Abdominal Infra", sets: 4, reps: "15-20", obs: "Elevação de pernas" }
+    ]
+  },
+
+  terca: {
+    title: "Terça: Costas Prioridade",
+    focus: "Formato em V / Postura / Dorsal",
+    exercises: [
+      { name: "Barra Fixa ou Puxada Alta", sets: 4, reps: "8-12", obs: "Pegada aberta" },
+      { name: "Remada Baixa Triângulo", sets: 4, reps: "10-12", obs: "Segure 1s na contração" },
+      { name: "Remada Unilateral Pesada", sets: 4, reps: "10", obs: "Foco em dorsal" },
+      { name: "Face Pull", sets: 4, reps: "15", obs: "Essencial para postura" },
+      { name: "Crucifixo Inverso", sets: 3, reps: "15", obs: "Posterior de ombro" },
+      { name: "Rosca Direta", sets: 3, reps: "10-12", obs: "Execução limpa" },
+      { name: "Rosca Martelo", sets: 3, reps: "12-15", obs: "Braquial e antebraço" },
+      { name: "Hiperextensão Lombar", sets: 3, reps: "15", obs: "Fortalecer lombar" }
+    ]
+  },
+
+  quarta: {
+    title: "Quarta: Pernas (Quadríceps)",
+    focus: "Alta demanda metabólica",
+    exercises: [
+      { name: "Agachamento Livre ou Hack", sets: 4, reps: "8-12", obs: "Prioridade técnica" },
+      { name: "Leg Press 45º", sets: 4, reps: "12-15", obs: "Pés baixos" },
+      { name: "Cadeira Extensora", sets: 3, reps: "15", obs: "Drop-set última série" },
+      { name: "Afundo com Halteres", sets: 3, reps: "12", obs: "Controle e amplitude" },
+      { name: "Panturrilha", sets: 5, reps: "15-20", obs: "Contração máxima" }
+    ]
+  },
+
+  quinta: {
+    title: "Quinta: Upper Body",
+    focus: "Pump / Definição / Volume",
+    exercises: [
+      { name: "Supino Reto", sets: 4, reps: "10-12", obs: "Bi-set com Remada" },
+      { name: "Remada Curvada", sets: 4, reps: "10-12", obs: "Bi-set com Supino" },
+      { name: "Desenvolvimento Halteres", sets: 3, reps: "12", obs: "Bi-set com Puxada" },
+      { name: "Puxada Alta Supinada", sets: 3, reps: "12", obs: "Bi-set com Desenvolvimento" },
+      { name: "Elevação Lateral", sets: 4, reps: "15", obs: "Foco total na lateral" },
+      { name: "Y-Raise ou Face Pull", sets: 3, reps: "15", obs: "Trapézio inferior e postura" },
+      { name: "Rosca Scott", sets: 3, reps: "12", obs: "Super-série braços" },
+      { name: "Tríceps Testa", sets: 3, reps: "12", obs: "Super-série braços" },
+      { name: "Prancha", sets: 4, reps: "1 min", obs: "Core e estabilização" }
+    ]
+  },
+
+  sexta: {
+    title: "Sexta: Posterior e Glúteo",
+    focus: "Posterior / Lombar / Glúteo",
+    exercises: [
+      { name: "Levantamento Terra ou Stiff", sets: 4, reps: "8-10", obs: "Técnica perfeita" },
+      { name: "Mesa Flexora", sets: 4, reps: "12-15", obs: "" },
+      { name: "Cadeira Flexora", sets: 3, reps: "Falha", obs: "" },
+      { name: "Elevação Pélvica", sets: 4, reps: "12", obs: "Contração no topo" },
+      { name: "Panturrilha em Pé", sets: 4, reps: "15", obs: "" },
+      { name: "Hiperextensão Lombar", sets: 2, reps: "15", obs: "Postura e estabilidade" }
+    ]
+  }
+};
 
     const profile = {
       nome: "Treino Slim/Definição",
