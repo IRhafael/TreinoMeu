@@ -1,0 +1,206 @@
+{
+    "segunda": {
+        "name": "Upper Push",
+        "focus": "Peito • Ombro • Tríceps • Core",
+        "exercises": [
+            {
+                "name": "Supino Inclinado",
+                "sets": 3,
+                "reps": "8-12",
+                "obs": "Carga progressiva"
+            },
+            {
+                "name": "Desenvolvimento com Halteres",
+                "sets": 3,
+                "reps": "8-12",
+                "obs": ""
+            },
+            {
+                "name": "Elevação Lateral",
+                "sets": 3,
+                "reps": "12-15",
+                "obs": ""
+            },
+            {
+                "name": "Tríceps Corda",
+                "sets": 3,
+                "reps": "10-15",
+                "obs": ""
+            },
+            {
+                "name": "Prancha",
+                "sets": 3,
+                "reps": "30-45s",
+                "obs": ""
+            }
+        ],
+        "cardio": {
+            "duration": "15-20 min",
+            "options": [
+                "Caminhada inclinada",
+                "Bike"
+            ]
+        }
+    },
+    "terca": {
+        "name": "Pull",
+        "focus": "Costas • Bíceps • Posterior de Ombro",
+        "exercises": [
+            {
+                "name": "Puxada Alta",
+                "sets": 3,
+                "reps": "8-12",
+                "obs": ""
+            },
+            {
+                "name": "Remada Baixa",
+                "sets": 3,
+                "reps": "10-12",
+                "obs": ""
+            },
+            {
+                "name": "Remada Unilateral",
+                "sets": 2,
+                "reps": "10-12",
+                "obs": ""
+            },
+            {
+                "name": "Face Pull",
+                "sets": 3,
+                "reps": "12-15",
+                "obs": ""
+            },
+            {
+                "name": "Rosca Martelo",
+                "sets": 2,
+                "reps": "10-12",
+                "obs": ""
+            }
+        ],
+        "cardio": {
+            "duration": "15-20 min",
+            "options": []
+        }
+    },
+    "quarta": {
+        "name": "Pernas",
+        "focus": "Quadríceps • Posterior • Panturrilha",
+        "exercises": [
+            {
+                "name": "Agachamento ou Hack",
+                "sets": 3,
+                "reps": "8-10",
+                "obs": "Escolher entre agachamento ou hack"
+            },
+            {
+                "name": "Leg Press",
+                "sets": 3,
+                "reps": "10-15",
+                "obs": ""
+            },
+            {
+                "name": "Cadeira Extensora",
+                "sets": 2,
+                "reps": "12-15",
+                "obs": ""
+            },
+            {
+                "name": "Mesa Flexora",
+                "sets": 3,
+                "reps": "10-15",
+                "obs": ""
+            },
+            {
+                "name": "Panturrilha",
+                "sets": 3,
+                "reps": "15-20",
+                "obs": ""
+            }
+        ],
+        "cardio": {
+            "duration": "10-15 min",
+            "options": [],
+            "intensity": "Leve"
+        }
+    },
+    "quinta": {
+        "name": "Full Body Metabólico",
+        "focus": "Peito • Costas • Ombro • Pernas • Abdômen",
+        "exercises": [
+            {
+                "name": "Supino Reto",
+                "sets": 3,
+                "reps": "8-10",
+                "obs": ""
+            },
+            {
+                "name": "Remada Curvada ou Máquina",
+                "sets": 3,
+                "reps": "8-10",
+                "obs": "Escolher entre remada curvada ou máquina"
+            },
+            {
+                "name": "Desenvolvimento Ombro",
+                "sets": 2,
+                "reps": "10-12",
+                "obs": ""
+            },
+            {
+                "name": "Afundo ou Passada",
+                "sets": 2,
+                "reps": "10-12",
+                "obs": "Escolher entre afundo ou passada"
+            },
+            {
+                "name": "Abdominal",
+                "sets": 3,
+                "reps": "",
+                "obs": "O plano não especifica o número de repetições"
+            }
+        ],
+        "cardio": {
+            "duration": "15 min",
+            "options": []
+        }
+    },
+    "sexta": {
+        "name": "Posterior e Glúteos",
+        "focus": "Posterior • Glúteos • Lombar • Panturrilha",
+        "exercises": [
+            {
+                "name": "Stiff com Halteres ou Barra",
+                "sets": 3,
+                "reps": "8-10",
+                "obs": "Escolher entre halteres ou barra"
+            },
+            {
+                "name": "Mesa Flexora",
+                "sets": 3,
+                "reps": "10-15",
+                "obs": ""
+            },
+            {
+                "name": "Passada Reversa no Smith",
+                "sets": 3,
+                "reps": "8-10 por perna",
+                "obs": ""
+            },
+            {
+                "name": "Extensão Lombar no Banco 45°",
+                "sets": 2,
+                "reps": "12-15",
+                "obs": ""
+            },
+            {
+                "name": "Panturrilha em Pé",
+                "sets": 3,
+                "reps": "15-20",
+                "obs": ""
+            }
+        ],
+        "cardio": {
+            "duration": "15-20 min",
+            "options": []
+        }
+    }
+}

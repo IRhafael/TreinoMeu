@@ -1339,7 +1339,8 @@
       layers: <React.Fragment><polygon points="12 2 2 7 12 12 22 7 12 2" /><polyline points="2 17 12 22 22 17" /><polyline points="2 12 12 17 22 12" /></React.Fragment>,
       video: <React.Fragment><polygon points="23 7 16 12 23 17 23 7" /><rect x="1" y="5" width="15" height="14" rx="2" /></React.Fragment>,
       book: <React.Fragment><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></React.Fragment>,
-      scale: <React.Fragment><circle cx="12" cy="12" r="9" /><path d="M12 12l4-4" /><path d="M9 21h6" /></React.Fragment>
+      scale: <React.Fragment><circle cx="12" cy="12" r="9" /><path d="M12 12l4-4" /><path d="M9 21h6" /></React.Fragment>,
+      copy: <React.Fragment><rect x="9" y="9" width="13" height="13" rx="2" ry="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></React.Fragment>
     };
 
     const Icon = memo(({ name, size = 20, className = '', strokeWidth = 2, fill = 'none' }) => {
@@ -2712,11 +2713,119 @@
       </Modal>
     );
 
+    const SAMPLE_WORKOUT_JSON_STR = JSON.stringify({
+      "segunda": {
+        "name": "Upper Push",
+        "focus": "Peito • Ombro • Tríceps",
+        "exercises": [
+          { "name": "Supino Inclinado", "sets": 3, "reps": "8-12", "obs": "Progressão de carga" },
+          { "name": "Desenvolvimento com Halteres", "sets": 3, "reps": "8-12", "obs": "" }
+        ]
+      },
+      "terca": {
+        "name": "Pull",
+        "focus": "Costas • Bíceps",
+        "exercises": [
+          { "name": "Puxada Alta", "sets": 3, "reps": "8-12", "obs": "" },
+          { "name": "Rosca Martelo", "sets": 3, "reps": "10-12", "obs": "" }
+        ]
+      }
+    }, null, 2);
+
+    const JsonImporterModal = ({ open, onClose }) => {
+      const app = useApp();
+      const [jsonText, setJsonText] = useState('');
+      const [mode, setMode] = useState('text');
+      const fileInputRef = useRef(null);
+
+      const copySample = () => {
+        try {
+          navigator.clipboard.writeText(SAMPLE_WORKOUT_JSON_STR);
+          app.showToast('Modelo JSON copiado!', 'success');
+        } catch (err) {
+          app.showToast('Não foi possível copiar automaticamente.', 'error');
+        }
+      };
+
+      const handleImportText = () => {
+        if (!jsonText.trim()) {
+          app.showToast('Cole o código JSON ou escolha um arquivo.', 'error');
+          return;
+        }
+        let parsed;
+        try { parsed = JSON.parse(jsonText); }
+        catch (e) { app.showToast('JSON inválido. Verifique o formato.', 'error'); return; }
+        const ok = app.importWorkoutData(parsed.workoutData || parsed);
+        if (ok) {
+          setJsonText('');
+          onClose();
+        }
+      };
+
+      const handleFileChange = (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const parsed = JSON.parse(String(ev.target.result || ''));
+            const ok = app.importWorkoutData(parsed.workoutData || parsed);
+            if (ok) onClose();
+          } catch (err) {
+            app.showToast('Não foi possível ler o arquivo JSON.', 'error');
+          }
+        };
+        reader.readAsText(file);
+      };
+
+      return (
+        <Modal open={open} title="Importar / Exportar Ficha JSON" eyebrow="Ficha de Treino" onClose={onClose} hideCancel confirmLabel="Fechar">
+          <div className="space-y-4">
+            <div className="flex gap-2">
+              <button className={`chip flex-1 ${mode === 'text' ? 'chip-on' : ''}`} onClick={() => setMode('text')}>Colar Texto JSON</button>
+              <button className={`chip flex-1 ${mode === 'file' ? 'chip-on' : ''}`} onClick={() => setMode('file')}>Enviar Arquivo .json</button>
+            </div>
+
+            {mode === 'text' ? (
+              <div>
+                <label className="label">Código JSON da Ficha</label>
+                <textarea className="input mono text-xs" style={{ minHeight: 140 }} value={jsonText}
+                  onChange={e => setJsonText(e.target.value)} placeholder="Cole aqui o JSON contendo os treinos e exercícios..." />
+                <button className="btn btn-primary w-full mt-2" onClick={handleImportText}>
+                  <Icon name="check" size={16} /> Subir Ficha do Texto
+                </button>
+              </div>
+            ) : (
+              <div className="text-center p-4 border border-dashed hairline rounded-lg">
+                <p className="text-xs text-faint mb-3">Selecione um arquivo .json de treino</p>
+                <button className="btn btn-primary" onClick={() => fileInputRef.current && fileInputRef.current.click()}>
+                  <Icon name="upload" size={16} /> Escolher arquivo JSON
+                </button>
+                <input ref={fileInputRef} type="file" accept="application/json,.json" className="sr-only" onChange={handleFileChange} />
+              </div>
+            )}
+
+            <div className="divider" />
+
+            <div className="space-y-2">
+              <button className="btn btn-dark w-full btn-sm" onClick={app.exportWorkoutJson}>
+                <Icon name="download" size={14} /> Exportar Ficha Atual em JSON
+              </button>
+              <button className="btn btn-ghost w-full btn-sm" onClick={copySample}>
+                <Icon name="copy" size={14} /> Copiar Modelo JSON de Exemplo
+              </button>
+            </div>
+          </div>
+        </Modal>
+      );
+    };
+
     const WorkoutEditor = () => {
       const app = useApp();
       const [day, setDay] = useState(app.activeDay);
       const [draft, setDraft] = useState(null);
       const [showDay, setShowDay] = useState(false);
+      const [showJsonModal, setShowJsonModal] = useState(false);
       const workout = app.workoutData[day];
 
       const openEditor = (index) => {
@@ -2828,15 +2937,19 @@
             <Icon name="plus" size={16} /> Adicionar exercício
           </button>
 
-          <div className="mt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+            <button className="btn btn-dark w-full" onClick={() => setShowJsonModal(true)}>
+              <Icon name="upload" size={15} /> Importar / Exportar JSON
+            </button>
             <button className="btn btn-ghost w-full" onClick={app.confirmRestoreDefaults}>
-              <Icon name="refresh" size={15} /> Restaurar plano padrão
+              <Icon name="refresh" size={15} /> Restaurar padrão
             </button>
           </div>
 
           <ExerciseEditorModal open={!!draft} draft={draft}
             onChange={(patch) => setDraft(d => ({ ...d, ...patch }))}
             onClose={() => setDraft(null)} onSave={save} />
+          <JsonImporterModal open={showJsonModal} onClose={() => setShowJsonModal(false)} />
           <div className="h-6" />
         </div>
       );
@@ -3377,6 +3490,15 @@
             history: migrateHistory(reparse(data.history)),
             userStats: migrateStats(reparse(data.stats))
           };
+        } else if (data.segunda || data.terca || data.quarta || data.quinta || data.sexta) {
+          payload = {
+            workoutData: migrateWorkout(data),
+            settings: migrateSettings(null),
+            progress: migrateProgress(null),
+            weights: migrateWeights(null),
+            history: migrateHistory(null),
+            userStats: migrateStats(null)
+          };
         } else {
           return { ok: false, error: 'Nenhum dado do IRON TRACK foi encontrado no arquivo.' };
         }
@@ -3447,6 +3569,30 @@
         reader.readAsText(file);
       }, [parseBackup, showToast]);
 
+      const importWorkoutData = useCallback((raw) => {
+        const migrated = migrateWorkout(raw);
+        if (!migrated) {
+          showToast('Formato de treino inválido.', 'error');
+          return false;
+        }
+        setWorkoutData(migrated);
+        storage.set(KEYS.workout, migrated);
+        showToast('Ficha de treino atualizada!', 'success');
+        return true;
+      }, [showToast]);
+
+      const exportWorkoutJson = useCallback(() => {
+        const jsonStr = JSON.stringify(workoutData, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ficha_treino_${dayStamp(Date.now())}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Ficha exportada em JSON!', 'success');
+      }, [workoutData, showToast]);
+
       /* ---------- Navegação ---------- */
       const navigate = useCallback((next) => {
         setView(next);
@@ -3465,7 +3611,7 @@
         confirmResetWeek, confirmDeleteHistory, confirmRestoreDefaults, confirmDeleteExercise,
         saveExercise, moveExercise, updateDayMeta, updateCardio,
         updateStat, logBodyWeight, setWaterCups, updateSetting,
-        exportBackup, importBackup, showToast,
+        exportBackup, importBackup, importWorkoutData, exportWorkoutJson, showToast,
         notifyStatus, canRequestNotify: notifySupported && notifyPermission === 'default', requestNotify
       };
 
